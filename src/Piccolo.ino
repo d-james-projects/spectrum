@@ -34,7 +34,7 @@ ffft library is provided under its own terms -- see ffft.S for specifics.
 
 #define PIN 6
 #define N_PIXELS  64
-#define BRIGHTNESS 255   // 0-255, higher number is brighter.
+#define BRIGHTNESS 0   // 0-255, higher number is brighter.
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
 
@@ -79,14 +79,14 @@ comparing live speech against ambient music of varying genres.
 */
 static const uint8_t PROGMEM
   // This is low-level noise that's subtracted from each FFT output column:
-  noise[64]={ 8,6,6,5,3,4,4,4,3,4,4,3,2,3,3,4,
+  noise[64]={ 8,6,6,5,3,4,4,4,2,2,2,2,2,2,2,2,
               2,1,2,1,3,2,3,2,1,2,3,1,2,3,4,4,
               3,2,2,2,2,2,2,1,3,2,2,2,2,2,2,2,
-              2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,4 },
+              2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2 },
   // These are scaling quotients for each FFT output column, sort of a
   // graphic EQ in reverse.  Most music is pretty heavy at the bass end.
   eq[64]={
-    255, 175,218,225,220,198,147, 99, 68, 47, 33, 22, 14,  8,  4,  2,
+    100, 100,100,100,100,100,100, 100, 30, 15, 7, 4, 3,  2,  1,  0,
       0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
       0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
       0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
@@ -123,9 +123,9 @@ static const uint8_t PROGMEM
 
 //Adafruit_BicolorMatrix matrix = Adafruit_BicolorMatrix();
 
-const uint32_t Red = strip.Color(255, 0, 0);
-const uint32_t Yellow = strip.Color(255, 255, 0);
-const uint32_t Green = strip.Color(0, 255, 0);
+const uint32_t Red = strip.Color(100, 0, 0);
+const uint32_t Yellow = strip.Color(100, 50, 0);
+const uint32_t Green = strip.Color(0, 100, 0);
 const uint32_t Off = strip.Color(0, 0, 0);
 
 uint32_t initRow[8] = {Green, Green, Green, Yellow, Yellow, Yellow, Red, Red};
@@ -261,15 +261,17 @@ void loop() {
 
     // The 'peak' dot color varies, but doesn't necessarily match
     // the three screen regions...yellow has a little extra influence.
-    y = (peak[x] >= 8) ? 7 : peak[x];
-    if(y >= 6)      strip.setPixelColor(x*8 + y, Red);
-    else if(y >= 2) strip.setPixelColor(x*8 + y, Yellow);
-    else            strip.setPixelColor(x*8 + y, Green);
+    if (peak[x] > 0) {
+      y = (peak[x] >= 8) ? 7 : peak[x] - 1;
+      if(y >= 5)      strip.setPixelColor(x*8 + y, Red);
+      else if(y >= 2) strip.setPixelColor(x*8 + y, Yellow);
+      else            strip.setPixelColor(x*8 + y, Green);
+    }
   }
 
   strip.show();
 
-  // Every third frame, make the peak pixels drop by 1:
+  // Every dotCount frame, make the peak pixels drop by 1:
   if(++dotCount >= 4) {
     dotCount = 0;
     for(x=0; x<8; x++) {
