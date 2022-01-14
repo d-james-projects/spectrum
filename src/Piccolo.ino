@@ -124,11 +124,15 @@ static const uint8_t PROGMEM
 //Adafruit_BicolorMatrix matrix = Adafruit_BicolorMatrix();
 
 const uint32_t Red = strip.Color(100, 0, 0);
-const uint32_t Yellow = strip.Color(100, 50, 0);
+const uint32_t Yellow = strip.Color(100, 100, 0);
 const uint32_t Green = strip.Color(0, 100, 0);
+const uint32_t Blue = strip.Color(0, 0, 100);
+const uint32_t Mauve = strip.Color(100, 0, 100);
+
 const uint32_t Off = strip.Color(0, 0, 0);
 
-uint32_t initRow[8] = {Green, Green, Green, Yellow, Yellow, Yellow, Red, Red};
+uint32_t initRow[8] = {Green, Green, Green, Blue, Blue, Blue, Red, Red};
+uint16_t ledColMap[8] = {3, 4, 5, 2, 1, 6, 7, 0};
 
 void stripInit() {
   for (uint16_t i=0; i < N_PIXELS; i++){
@@ -138,7 +142,7 @@ void stripInit() {
 
 void stripDrawLine(uint8_t column, uint8_t end, uint32_t color) {
   for (uint8_t i=7; i < 8 && i >= end ; i--) {
-    strip.setPixelColor(column * 8 + i, Off);
+    strip.setPixelColor(ledColMap[column] * 8 + i, Off);
   }
 }
 
@@ -162,7 +166,7 @@ void setup() {
   }
 
   //matrix.begin(0x70);
-  FastLED.addLeds<WS2812B, PIN, COLOR_ORDER>(leds, N_PIXELS).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2812B, PIN, COLOR_ORDER>(leds, N_PIXELS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
   strip.begin();
   stripInit();
@@ -263,9 +267,9 @@ void loop() {
     // the three screen regions...yellow has a little extra influence.
     if (peak[x] > 0) {
       y = (peak[x] >= 8) ? 7 : peak[x] - 1;
-      if(y >= 5)      strip.setPixelColor(x*8 + y, Red);
-      else if(y >= 2) strip.setPixelColor(x*8 + y, Yellow);
-      else            strip.setPixelColor(x*8 + y, Green);
+      if(y >= 5)      strip.setPixelColor(ledColMap[x]*8 + y, Red);
+      else if(y >= 2) strip.setPixelColor(ledColMap[x]*8 + y, Blue);
+      else            strip.setPixelColor(ledColMap[x]*8 + y, Green);
     }
   }
 
